@@ -24,7 +24,7 @@ import json
 
 
 
-with open("config/rf_params.json", "r") as file:
+with open("config/rf_params._ttk.json", "r") as file:
     rf_params = (json.loads(file.read()))
 
 # list of anchors to configure
