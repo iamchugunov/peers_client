@@ -1,0 +1,2 @@
+{"number": 1, "master_number": 0, "IP": "192.168.99.10", "ADRx": 16492, "ADTx": 16492, "x": 1.0, "y": 0.0, "z": 1.0, "Role": "Master"}
+{"number": 2, "master_number": 1, "IP": "192.168.99.8", "ADRx": 16492, "ADTx": 16492, "x": 5.0, "y": 0.0, "z": 1.0, "Role": "Slave"}
