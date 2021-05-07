@@ -1,28 +1,7 @@
-# import asyncio
-#
-#
-# async def tcp_echo_client(message, loop):
-#     reader, writer = await asyncio.open_connection('127.0.1.2', 8888)
-#
-#     print('Send: %r' % message)
-#     writer.write(message.encode())
-#
-#     data = await reader.read(100)
-#     print('Received: %r' % data.decode())
-#
-#     print('Close the socket')
-#     writer.close()
-#
-#
-# message = 'Hello World!'
-# loop = asyncio.get_event_loop()
-# loop.run_until_complete(tcp_echo_client(message, loop))
-# loop.close()
-
 import socket
 import json
 import threading
-
+import commands as co
 
 with open("config/rf_params_ttk.json", "r") as file:
     rf_params = (json.loads(file.read()))
@@ -38,13 +17,13 @@ print((anchors_conf))
 s = socket.socket()
 s.connect(('192.168.99.52', 5051))
 
+co.send_state_request(s)
+msg = co.receive_from_server(s)
+
 s1 = socket.socket()
 s1.connect(('192.168.99.52', 5052))
 
-def send_to_server(data2send, s):
-    data2send = json.dumps(data2send).encode()
-    s.sendall(len(data2send).to_bytes(4, "little"))
-    s.sendall(data2send)
+
 
 def requester():
     while 1:
@@ -52,47 +31,38 @@ def requester():
 
         if data == "1":
             for anchor in anchors_conf:
-                data2send = anchor
-                data2send["type"] = "new_anchor"
-                send_to_server(data2send, s)
+                co.send_anchor_info(anchor, s)
+
 
         if data == "2":
-            data2send = {}
-            data2send["type"] = "relate_to_masters"
-            send_to_server(data2send, s)
+            co.send_relate_to_masters(s)
 
         if data == "3":
-            data2send = rf_params
-            data2send["type"] = "rf_config"
-            send_to_server(data2send, s)
+            co.send_rf_config(rf_params, s)
 
         if data == "go":
-            data2send = {}
-            data2send["type"] = "Start"
-            send_to_server(data2send, s)
+            co.send_start(s)
 
         if data == "stop":
-            data2send = {}
-            data2send["type"] = "Stop"
-            send_to_server(data2send, s)
+            co.send_stop(s)
 
         if data == "get anchors":
-            data2send = {}
-            data2send["type"] = 'get_anchors'
-            send_to_server(data2send, s)
-            rcv_size = int.from_bytes(s.recv(4), 'little')
-            msg = json.loads(s.recv(rcv_size).decode())
+            co.send_get_anchors(s)
+            msg = co.receive_from_server(s)
             for anchor in msg:
                 print(anchor)
 
         if data == "get tags":
-            data2send = {}
-            data2send["type"] = 'get_tags'
-            send_to_server(data2send, s)
-            rcv_size = int.from_bytes(s.recv(4), 'little')
-            msg = json.loads(s.recv(rcv_size).decode())
+            co.send_get_tags(s)
+            msg = co.receive_from_server(s)
             for tag in msg:
                 print(tag)
+
+        if data == "state request":
+            co.send_state_request(s)
+            msg = co.receive_from_server(s)
+            print(msg)
+
 
 def streamer():
     while 1:
